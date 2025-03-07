@@ -1,0 +1,10 @@
+{
+  "cordova-plugin-installer": {
+    "source": {
+      "type": "local",
+      "path": "E:\\workspace\\aainstaller\\aainstaller\\node_modules\\cordova-plugin-installer"
+    },
+    "is_top_level": true,
+    "variables": {}
+  }
+}
