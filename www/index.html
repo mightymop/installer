@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Security-Policy" content="default-src * data: 'unsafe-inline' 'unsafe-eval'; frame-src * data: filesystem: blob:; object-src * data: filesystem: blob:; script-src * data: 'unsafe-inline' 'unsafe-eval'; style-src * 'self' data: 'unsafe-inline' 'unsafe-eval'; img-src * data: filesystem: blob:; font-src * data: filesystem: blob:; connect-src *; media-src * data: filesystem: blob:; child-src *; worker-src * data: filesystem: blob:; form-action *; base-uri *; manifest-src * data: filesystem: blob:">    
+        <meta name="format-detection" content="telephone=no">
+        <meta name="msapplication-tap-highlight" content="no">
+        <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
+        <meta name="color-scheme" content="light dark">
+        <link rel="stylesheet" href="css/index.css">
+        <title>Installer</title>
+        <script>
+            function test(){
+                installer.install('de.berlin.polizei.polosk3',()=>{alert('OK');},()=>{alert('ERROR');});
+            }
+
+            function createList(){
+                var list = document.getElementById('list');
+
+                installer.getInstalledApps((result)=>{
+                    console.log(result);
+                    buildList(JSON.parse(result));
+                },
+                (error)=>{
+                    alert(error);
+                    console.error(error);
+                });
+            }
+
+            function buildList(jsonArray) {
+                const listContainer = document.getElementById("list");
+                listContainer.innerHTML='';
+
+                jsonArray.sort((a, b) => a.name.localeCompare(b.name));
+    
+                jsonArray.forEach(item => {
+                    const listItem = document.createElement("div");
+                    listItem.className = "list-item";
+    
+                    // Icon (Base64 Image)
+                    const iconImg = document.createElement("img");
+                    iconImg.src = `data:image/png;base64,${item.icon}`;
+    
+                    // Info Container
+                    const infoDiv = document.createElement("div");
+                    infoDiv.className = "info";
+    
+                    // Name
+                    const nameDiv = document.createElement("div");
+                    nameDiv.className = "name";
+                    nameDiv.innerText = item.name;
+    
+                    // Package
+                    const packageDiv = document.createElement("div");
+                    packageDiv.className = "package";
+                    packageDiv.innerText = item.package;
+                    packageDiv.classList.add("package-div");
+    
+                    // Append the elements to the list item
+                    infoDiv.appendChild(nameDiv);
+                    infoDiv.appendChild(packageDiv);
+                    listItem.appendChild(iconImg);
+                    listItem.appendChild(infoDiv);
+    
+                    // Event für Long-Press
+                    listItem.addEventListener("mousedown", (e) => {
+                        const pressStartTime = Date.now();
+                    
+                        const handleMouseUp = () => {
+                            const pressDuration = Date.now() - pressStartTime;
+                            if (pressDuration >= 1000) {
+                                if (confirm(`Möchten Sie ${item.name} für Android Auto installieren?`)) {
+                                    installer.install(item.package, () => { alert('OK'); }, () => { alert('ERROR'); });
+                                }
+                            }
+                            document.removeEventListener("mouseup", handleMouseUp);
+                        };
+                    
+                        document.addEventListener("mouseup", handleMouseUp);
+                    });
+                    
+                    listItem.addEventListener("touchstart", (e) => {
+                        const pressStartTime = Date.now();
+                    
+                        const handleTouchEnd = () => {
+                            const pressDuration = Date.now() - pressStartTime;
+                            if (pressDuration >= 1000) {
+                                if (confirm(`Möchten Sie ${item.name} für Android Auto installieren?`)) {
+                                    installer.install(item.package, () => { alert('OK'); }, () => { alert('ERROR'); });
+                                }
+                            }
+                            document.removeEventListener("touchend", handleTouchEnd);
+                        };
+                    
+                        document.addEventListener("touchend", handleTouchEnd);
+                    });
+    
+                    // Füge das Listenelement zur Liste hinzu
+                    listContainer.appendChild(listItem);
+                });
+            }
+
+        </script>
+        <style>
+            html, body {
+                height: 100%; /* Stellt sicher, dass der Body die volle Höhe des Viewports einnimmt */
+                margin: 0;    /* Entfernt den Standard-Rand */
+                padding: 0;   /* Entfernt den Standard-Padding */
+            }
+
+            body {
+                display: flex;        /* Flexbox-Modell aktivieren */
+                flex-direction: column; /* Elemente vertikal anordnen */
+                justify-content: flex-start; /* Beginnt den Inhalt am oberen Rand */
+            }
+
+            #list {
+                flex-grow: 1;         /* Nimmt den restlichen verfügbaren Platz ein */
+                overflow-y: auto;     /* Ermöglicht das Scrollen der Liste */
+                padding-right: 10px;  
+                padding-left: 10px;  /* Verhindert, dass die Scrollbar überlappt */
+            }
+
+            button {
+             
+                margin: 10px; /* Fügt einen Abstand zwischen Button und Liste hinzu */
+                padding: 20px !important;        /* Definiert eine feste Höhe für den Button */
+            }
+
+            .list-item {
+                display: flex;
+                align-items: center;
+                margin-bottom: 10px;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                cursor: pointer;
+            }
+
+            .list-item img {
+                width: 50px;
+                height: 50px;
+                margin-right: 10px;
+            }
+
+            .list-item .info {
+                flex-grow: 1;
+            }
+
+            .list-item .name {
+                font-weight: bold;
+                font-size: 14px;
+            }
+
+            .list-item .package {
+                font-size: 12px;
+                color: gray;
+            }
+
+            .package-div {
+                width: 200px;          /* Maximal breite des Elements */
+                word-wrap: break-word; /* Umbrüche zwischen Wörtern erlauben */
+                word-break: break-all; /* Umbricht lange Wörter, die nicht in den verfügbaren Platz passen */
+            }
+        </style>
+    </head>
+    <body>
+        <script src="cordova.js"></script>
+        <script src="js/index.js"></script>
+        <button onclick="createList();" >Liste laden</button>
+        <div id="list"></div>
+    </body>
+</html>
